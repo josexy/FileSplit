@@ -45,7 +45,7 @@ class FileSplit {
     static vector<string> _listDir(const string& chunk_files_dir);
     /* get file size */
     static long int _calc_fileSize(const string& file);
-    /* alc the chunk size from file size */
+    /* calc the chunk size from file size */
     static long int _calc_per_chunkSize(long int file_size);
 };
 
