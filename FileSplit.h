@@ -22,31 +22,41 @@
 #include <time.h>
 
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
+#include "ThreadPool.h"
 
 class FileSplit {
    public:
-    FileSplit() {}
+    FileSplit(size_t maxThreads)
+        : pool_(maxThreads), maxThreads_(maxThreads), index_(0) {}
     ~FileSplit() {}
 
-    static vector<string> split(const string& filepath, long int chunk_size = 0,
-                                bool del_oldfiles= true,
-                                const string& savedir = "data_chunk");
+    std::vector<std::string> split(const std::string& filepath,
+                                   long int chunk_size = 0,
+                                   bool del_oldfiles = true,
+                                   const std::string& savedir = "data_chunk");
 
-    static bool merge(const string& chunk_files_dir,
-                      const string& save_mergefile_path,bool del_files=false);
+    bool merge(const std::string& chunk_files_dir,
+               const std::string& save_mergefile_path, bool del_files = false);
 
    private:
-    /* list dir */
-    static vector<string> _listDir(const string& chunk_files_dir);
-    /* get file size */
-    static long int _calc_fileSize(const string& file);
-    /* calc the chunk size from file size */
-    static long int _calc_per_chunkSize(long int file_size);
+    std::vector<std::string> _do_split_work(const std::string& filepath,
+                                            long int chunk_size, int per_count,
+                                            const std::string& savedir, FILE*);
+
+    std::vector<std::string> _listDir(const std::string& chunk_files_dir);
+    long int _calc_fileSize(const std::string& file);
+    long int _calc_per_chunkSize(long int file_size);
+
+   private:
+    ThreadPool pool_;
+    int maxThreads_;
+    int index_;
+
+    std::mutex mutex_;
 };
 
 #endif
